@@ -1,0 +1,61 @@
+﻿@using Microsoft.AspNetCore.Identity
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ShopApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/ShopApp.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        @if (User.Identity.IsAuthenticated)
+        {
+            <h1>Hello @User.Identity.Name</h1>
+            <form asp-action="Logout" asp-controller="User" method="post">
+                <button class="btn btn-danger" type="submit">Exit</button>
+                <a asp-controller="User" asp-action="CreateRole" class="btn btn-primary">Create role</a>
+                <a asp-controller="User" asp-action="AssignRole" class="btn btn-primary">Assign role</a>
+            </form>
+            <ul class="list-group">
+                <li class="list-group-item"><a asp-controller="Products" asp-action="Index" class="btn btn-primary">Products</a></li>
+
+                @if (User.IsInRole("Admin"))
+                {
+                    <li class="list-group-item"><a asp-controller="Products" asp-action="Create" class="btn btn-primary">Create product</a></li>
+                }
+            </ul>
+        }
+        else
+        {
+            <div>
+                <a asp-controller="User" asp-action="Create" class="btn btn-primary">Register</a>
+                <a asp-controller="User" asp-action="Login" class="btn btn-primary">Login</a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">Home</a>
+            </div>
+            <ul class="list-group">
+                <li class="list-group-item active" aria-current="true"><a asp-controller="Products" asp-action="Index" class="btn btn-primary">Products</a></li>
+                <li class="list-group-item"><a asp-controller="Products" asp-action="Details" class="btn btn-primary">Register</a></li>
+            </ul>
+        }
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2024 - ShopApp
+        </div>
+    </footer>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
