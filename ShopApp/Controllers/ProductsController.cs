@@ -2,29 +2,30 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using ShopApp.Models;
+using ShopApp.Services;
 using System.Text.Json.Serialization.Metadata;
 
 namespace ShopApp.Controllers
 {
     public class ProductsController : Controller
     {
-        private readonly UserContext _context;
+        private readonly IServiceProduct _serviceProduct;
 
-        public ProductsController(UserContext context)
+        public ProductsController(IServiceProduct serviceProduct)
         {
-            _context = context;
+            _serviceProduct = serviceProduct;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Products.ToListAsync());
+            return View(await _serviceProduct.ReadAsync());
         }
 
         [HttpGet]
         public async Task<IActionResult> Details(int id)
         {
-            return View(await _context.Products.FindAsync(id));
+            return View(await _serviceProduct.GetByIdAsync(id));
         }
 
         [Authorize(Roles = "Admin")]
@@ -36,8 +37,7 @@ namespace ShopApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                await _context.Products.AddAsync(product);
-                await _context.SaveChangesAsync();
+                await _serviceProduct.CreateAsync(product);
                 return RedirectToAction("Index");
             }
             return BadRequest("Model is not valid");
@@ -45,15 +45,14 @@ namespace ShopApp.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpGet]
-        public async Task<ViewResult> Update(int id) => View(await _context.Products.FindAsync(id));
+        public async Task<ViewResult> Update(int id) => View(await _serviceProduct.GetByIdAsync(id));
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Update([Bind("Id,Name,Price,Description")] Product product)
         {
             if (ModelState.IsValid)
             {
-                _context.Update(product);
-                await _context.SaveChangesAsync();
+                await _serviceProduct.UpdateAsync(product.Id, product);
                 return RedirectToAction("Index");
             }
             return BadRequest("Model is not valid");
@@ -68,8 +67,7 @@ namespace ShopApp.Controllers
         {
             if(confirm == 1)
             {
-                _context.Remove(await _context.Products.FindAsync(id));
-                await _context.SaveChangesAsync();
+                await _serviceProduct.DeleteAsync(id);
             }
             return RedirectToAction("Index");
         }

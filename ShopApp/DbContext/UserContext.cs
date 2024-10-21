@@ -9,6 +9,4 @@ public class UserContext : IdentityDbContext
     {
         
     }
-
-    public DbSet<Product> Products { get; set; }
 }

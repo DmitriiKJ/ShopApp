@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using ShopApp.Services;
 
 namespace ShopApp
 {
@@ -19,6 +20,13 @@ namespace ShopApp
             //builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
             //    .AddEntityFrameworkStores<ApplicationDbContext>();
             //builder.Services.AddControllersWithViews();
+
+            builder.Services.AddScoped<IServiceProduct, ServiceProduct>();
+
+            builder.Services.AddDbContext<ProductContext>(options =>
+            {
+                options.UseSqlServer(connectionString);
+            });
 
             builder.Services.AddDbContext<UserContext>(options =>
             {
