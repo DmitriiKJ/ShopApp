@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using ShopApp.Models;
 using ShopApp.Services;
 
-namespace ShopApp.Controllers
+namespace ShopApp.Controllers.API
 {
     [Route("api/[controller]")]
     [ApiController]

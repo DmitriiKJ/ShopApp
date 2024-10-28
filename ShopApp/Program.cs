@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using ShopApp.Services;
@@ -35,7 +36,7 @@ namespace ShopApp
 
             builder.Services.AddSession();
 
-            builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+            builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
             {
                 options.SignIn.RequireConfirmedEmail = true;
                 options.Password.RequireDigit = true;
@@ -45,8 +46,15 @@ namespace ShopApp
                 options.Password.RequiredLength = 4;
                 options.Password.RequiredUniqueChars = 0;
             })
-                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<UserContext>();
+
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.ExpireTimeSpan = new TimeSpan(0, 0, 10);
+                options.SlidingExpiration = true;
+                options.AccessDeniedPath = "/api/apiuser/accessdenied";
+            });
 
             builder.Services.AddControllersWithViews();
 
@@ -71,7 +79,6 @@ namespace ShopApp
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
-            app.MapRazorPages();
 
             //run migration before start application
             //using (var scope = app.Services.CreateScope())
@@ -79,6 +86,8 @@ namespace ShopApp
             //    var db = scope.ServiceProvider.GetRequiredService<UserContext>();    
             //    db.Database.Migrate();
             //}
+
+            app.MapControllers();
 
             app.Run();
         }
