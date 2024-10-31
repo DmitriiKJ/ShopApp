@@ -25,20 +25,19 @@ namespace ShopApp.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateRole(string roleName)
         {
-            if (string.IsNullOrEmpty(roleName))
-            {
-                return BadRequest("Role name is required");
-            }
-
-            var roleExists = await _roleManager.RoleExistsAsync(roleName);
-            if (roleExists)
-            {
-                return BadRequest("Role already exists");
-            }
-
             if (User.Identity.IsAuthenticated)
             {
-                
+                if (string.IsNullOrEmpty(roleName))
+                {
+                    return BadRequest("Role name is required");
+                }
+
+                var roleExists = await _roleManager.RoleExistsAsync(roleName);
+                if (roleExists)
+                {
+                    return BadRequest("Role already exists");
+                }
+
                 var role = new IdentityRole { Name = roleName };
                 var result = await _roleManager.CreateAsync(role);
                 if (result.Succeeded)
@@ -85,7 +84,7 @@ namespace ShopApp.Controllers
             return BadRequest(Json(result.Errors));
         }
 
-            [HttpGet]
+        [HttpGet]
         public IActionResult Create()
         {
             return View();
