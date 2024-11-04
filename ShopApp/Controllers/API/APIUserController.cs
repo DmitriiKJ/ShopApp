@@ -2,6 +2,11 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using ShopApp.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace ShopApp.Controllers.API
 {
@@ -13,23 +18,31 @@ namespace ShopApp.Controllers.API
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly RoleManager<IdentityRole> _roleManager;
+        private readonly IConfiguration _config;
 
-        public APIUserController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager)
+        public APIUserController(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, RoleManager<IdentityRole> roleManager, IConfiguration config)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _roleManager = roleManager;
+            _config = config;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(string email, string password)
+        public async Task<IActionResult> Register([FromBody] RegisterDTO rdto)
         {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(rdto.Email) || string.IsNullOrEmpty(rdto.Password))
             {
                 return BadRequest("Email or password are require");
             }
-            var user = new IdentityUser { UserName = email, Email = email, EmailConfirmed = true };
-            var result = await _userManager.CreateAsync(user, password);
+
+            var user = new IdentityUser { 
+                UserName = rdto.Email, 
+                Email = rdto.Email, 
+                EmailConfirmed = true 
+            };
+
+            var result = await _userManager.CreateAsync(user, rdto.Password);
 
             if (result.Succeeded)
             {
@@ -40,18 +53,24 @@ namespace ShopApp.Controllers.API
         }
 
         [HttpPost("auth")]
-        public async Task<IActionResult> Auth(string email, string password)
+        public async Task<IActionResult> Auth([FromBody] LoginDTO ldto)
         {
-            if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(ldto.Email) || string.IsNullOrEmpty(ldto.Password))
             {
                 return BadRequest("Email or password are require");
             }
 
-            var result = await _signInManager.PasswordSignInAsync(email, password, false, false);
+            var user = await _userManager.FindByEmailAsync(ldto.Email);
+            if (user == null)
+            {
+                return BadRequest("Invalid email");
+            }
+            var result = await _signInManager.CheckPasswordSignInAsync(user, ldto.Password, false);
 
             if (result.Succeeded)
             {
-                return Ok("Auth successfully...");
+                var token = GenerateJwtToken(user);
+                return Ok(new {Token = token});
             }
 
             return BadRequest("Error with auth");
@@ -157,6 +176,28 @@ namespace ShopApp.Controllers.API
             }
             return BadRequest("You are not authotize");
 
+        }
+
+        private string GenerateJwtToken(IdentityUser user)
+        {
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.UTF8.GetBytes(_config["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
+                    new Claim(ClaimTypes.Name, user.UserName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                }),
+                Expires = DateTime.UtcNow.AddMinutes(Convert.ToDouble(_config["Jwt:DurationInMinutes"])),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256),
+                Issuer = _config["Jwt:Issuer"],
+                Audience = _config["Jwt:Audience"]
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

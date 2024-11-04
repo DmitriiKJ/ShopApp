@@ -1,7 +1,11 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using ShopApp.Services;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace ShopApp
 {
@@ -46,15 +50,34 @@ namespace ShopApp
                 options.Password.RequiredLength = 4;
                 options.Password.RequiredUniqueChars = 0;
             })
-                .AddEntityFrameworkStores<UserContext>();
+                .AddEntityFrameworkStores<UserContext>()
+                .AddDefaultTokenProviders();
 
-            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
             .AddCookie(options =>
             {
                 options.ExpireTimeSpan = new TimeSpan(0, 0, 10);
                 options.SlidingExpiration = true;
                 options.AccessDeniedPath = "/api/apiuser/accessdenied";
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                };
             });
+
 
             builder.Services.AddControllersWithViews();
 
