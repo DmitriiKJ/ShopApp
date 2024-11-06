@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace ShopApp.Models
 {
@@ -19,5 +20,8 @@ namespace ShopApp.Models
 
         [StringLength(1024)]
         public string Description { get; set; } = String.Empty;
+
+        [JsonIgnore]
+        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

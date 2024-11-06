@@ -27,6 +27,7 @@ namespace ShopApp
             //builder.Services.AddControllersWithViews();
 
             builder.Services.AddScoped<IServiceProduct, ServiceProduct>();
+            builder.Services.AddScoped<IServiceOrder, ServiceOrder>();
 
             builder.Services.AddDbContext<ProductContext>(options =>
             {
