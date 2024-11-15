@@ -26,19 +26,33 @@ namespace ShopApp.Services
         {
             try
             {
+
                 var user = await _userContext.Users.FindAsync(order.UserId);
                 if (order != null && user != null)
                 {
-                    foreach (var id in productsId)
+                    await _context.AddAsync(order);
+                    await _context.SaveChangesAsync();
+
+                    var orderId = order.Id;
+
+
+                    foreach (var id in productsId.Distinct())
                     {
                         var product = await _context.Products.FindAsync(id);
                         if (product != null)
                         {
-                            order.Summ += product.Price;
+                            var orderProduct = new OrderProduct
+                            {
+                                OrderId = orderId,
+                                ProductId = id,
+                                Quantity = productsId.Where(p => p == id).Count()
+                            };
+                            _context.Set<OrderProduct>().Add(orderProduct);
+
+                            order.Summ += _context.Products.FirstOrDefault(p => p.Id == id).Price * productsId.Where(p => p == id).Count();
                             order.Products.Add(product);
                         }
                     }
-                    await _context.AddAsync(order);
                     await _context.SaveChangesAsync();
                     return true;
                 }
@@ -109,12 +123,30 @@ namespace ShopApp.Services
                     ord.Products.Clear();
                     await _context.SaveChangesAsync();
 
-                    foreach (var idp in productsId)
+                    
+                    foreach (var idp in productsId.Distinct())
                     {
                         var product = await _context.Products.FindAsync(idp);
+                        var prodOrd = await _context.OrderProducts.FirstOrDefaultAsync(op => op.OrderId == id && op.ProductId == idp);
+
                         if (product != null)
                         {
-                            ord.Summ += product.Price;
+                            ord.Summ += _context.Products.FirstOrDefault(p => p.Id == idp).Price * productsId.Where(p => p == idp).Count();
+                            if (prodOrd == null)
+                            {
+                                var orderProduct = new OrderProduct
+                                {
+                                    OrderId = ord.Id,
+                                    ProductId = idp,
+                                    Quantity = productsId.Where(p => p == idp).Count()
+                                };
+                                _context.Set<OrderProduct>().Add(orderProduct);
+                            }
+                            else
+                            {
+                                prodOrd.Quantity = productsId.Where(p => p == idp).Count();
+                                _context.Update(prodOrd);
+                            }
                             ord.Products.Add(product);
                         }
                     }

@@ -21,7 +21,8 @@ namespace ShopApp.Models
         [Required]
         public string UserId { get; set; } = string.Empty;
 
-        public virtual ICollection<Product> Products { get; set; } = new List<Product>();
+        [JsonIgnore]
+        public ICollection<Product> Products { get; set; } = new List<Product>();
 
     }
 }

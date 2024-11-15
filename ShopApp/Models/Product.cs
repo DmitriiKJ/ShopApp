@@ -24,6 +24,6 @@ namespace ShopApp.Models
         public string Description { get; set; } = String.Empty;
 
         [JsonIgnore]
-        public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+        public ICollection<Order> Orders { get; set; } = new List<Order>();
     }
 }

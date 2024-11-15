@@ -1,0 +1,98 @@
+﻿@model IEnumerable<Product>;
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    ViewData["Title"] = "Update";
+}
+<h3>List</h3>
+<form onsubmit="sendToServer(event, '@ViewBag.OrderId')">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>
+                    @Html.DisplayNameFor(model => model.Id)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Name)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Price)
+                </th>
+                <th>
+                    @Html.DisplayNameFor(model => model.Description)
+                </th>
+                <th>
+                    Count
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Name)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Price)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        <input type="number" min="0" max="100" onchange="addProduct(this.value, @item.Id)" value="@((ViewBag.ProductsId is List<int>) ? (ViewBag.ProductsId as List<int>).Count(p => p == item.Id) : 0)" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-info">Update order</button>
+</form>
+<a asp-action="Index">Go to orders list</a>
+
+<script>
+    let productsId = @Html.Raw(Json.Serialize(ViewBag.ProductsId));
+
+    function addProduct(count, productId) {
+
+        productsId = productsId.filter(item => item !== productId)
+        for(let i = 0; i < count; i++) {
+            productsId.push(productId)
+        }
+    }
+
+    function sendToServer(e, id) {
+        e.preventDefault()
+
+        if(productsId.length == 0)
+        {
+            alert("Order is empty. Choose any products")
+            return;
+        }
+
+        if (!id) 
+        {
+            console.error("UserId not found!");
+            return;
+        }
+
+        let token = localStorage.getItem("token")
+
+        fetch(`http://localhost:5264/api/apiorders/${id}`,
+        {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(productsId)
+        })
+        .then(data => window.location.href = '/Order/Index')
+        .catch(err => alert(err.message))
+    }
+
+</script>
+
+
