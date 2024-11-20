@@ -15,8 +15,8 @@
         @if (User.Identity.IsAuthenticated)
         {
             <h1>Hello @User.Identity.Name</h1>
-            <form asp-action="Logout" asp-controller="User" method="post">
-                <button class="btn btn-danger" type="submit">Exit</button>
+            <form asp-action="Logout" asp-controller="User" method="post" id="formLogOut">
+                <button class="btn btn-danger" type="button" onclick="logOut()">Exit</button>
                 <a asp-controller="User" asp-action="CreateRole" class="btn btn-primary">Create role</a>
                 <a asp-controller="User" asp-action="AssignRole" class="btn btn-primary">Assign role</a>
                 <a asp-controller="Order" asp-action="Index" class="btn btn-warning">Orders</a>
@@ -60,5 +60,11 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        function logOut(){
+            localStorage.removeItem("token");
+            document.getElementById("formLogOut").submit()
+        }
+    </script>
 </body>
 </html>

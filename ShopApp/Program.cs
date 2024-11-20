@@ -82,6 +82,20 @@ namespace ShopApp
 
             builder.Services.AddControllersWithViews();
 
+            //Add CORS
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("*", policy =>
+                {
+                    policy
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader();
+
+                });
+            });
+
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -94,6 +108,7 @@ namespace ShopApp
                 app.UseExceptionHandler("/Home/Error");
             }
 
+            app.UseCors("*");
             app.UseRouting();
             app.UseHttpsRedirection();
             app.UseStaticFiles();
