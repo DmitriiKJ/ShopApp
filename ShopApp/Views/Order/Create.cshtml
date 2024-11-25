@@ -92,7 +92,9 @@
             },
             body: JSON.stringify(productsId)
         })
-        .then(data => window.location.href = '/Order/Index')
+            .then(data => {
+                if(data.ok) window.location.href = '/Order/Index'
+            })
         .catch(err => console.log(err))
     }
 

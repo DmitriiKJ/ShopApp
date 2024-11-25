@@ -9,6 +9,7 @@ public class ProductContext : DbContext
     public DbSet<Product> Products { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderProduct> OrderProducts { get; set; }
+    public DbSet<Customer> Customers { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,6 +23,12 @@ public class ProductContext : DbContext
                 op => op.HasOne(op => op.Order).WithMany().HasForeignKey(op => op.OrderId),
                 op => op.Property(op => op.Quantity).HasDefaultValue(1)
             );
+
+        //modelBuilder.Entity<OrderProduct>()
+        //    .HasKey(op => new { op.ProductId, op.OrderId });
+        //modelBuilder.Entity<OrderProduct>()
+        //    .HasOne(op => op.Order)
+        //    .......
     }
 
 }

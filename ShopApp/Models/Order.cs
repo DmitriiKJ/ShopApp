@@ -18,10 +18,15 @@ namespace ShopApp.Models
         [Required]
         public DateTime OrderDate { get; set; }
 
+        //[ForeignKey("Customer")]
         [Required]
         public string UserId { get; set; } = string.Empty;
 
-        [JsonIgnore]
+        //[Required]
+        public Customer? Customer { get; set; }
+
+        // Navigation property
+        //[JsonIgnore]
         public ICollection<Product> Products { get; set; } = new List<Product>();
 
     }
