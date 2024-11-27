@@ -28,6 +28,7 @@ namespace ShopApp
 
             builder.Services.AddScoped<IServiceProduct, ServiceProduct>();
             builder.Services.AddScoped<IServiceOrder, ServiceOrder>();
+            builder.Services.AddScoped<ICustomerService, CustomerService>();
 
             builder.Services.AddDbContext<ProductContext>(options =>
             {
